@@ -1,0 +1,9 @@
+
+
+const getAllPredictions = () => {
+    
+}
+
+const postPrediction = () => {
+    
+}

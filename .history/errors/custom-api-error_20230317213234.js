@@ -1,0 +1,2 @@
+
+class CustomAPIError extends

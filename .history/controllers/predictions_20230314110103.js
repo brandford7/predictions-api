@@ -1,0 +1,7 @@
+
+
+const getAllPredictions = () => {
+    
+}
+
+const post

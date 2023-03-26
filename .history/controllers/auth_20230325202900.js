@@ -1,0 +1,14 @@
+const { BadRequestError } = require("../errors");
+const User = require("../models/User");
+
+const login = async(req, res) => {
+  const { email, password } = req.body;
+
+  //check if email or password field is not empty
+
+  if (!email || !password)
+        throw new BadRequestError("email and password fields cannot be empty");
+    const user = await User.findone({ email })
+    if(!user) throw new NotFoundError('User does not exist, ')
+};
+

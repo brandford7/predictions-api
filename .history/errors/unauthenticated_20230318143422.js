@@ -1,0 +1,3 @@
+
+
+class UnAuthenticatedErr extends CustomAPIError

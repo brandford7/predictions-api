@@ -1,0 +1,41 @@
+# Node.js dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Debugging
+.vscode/
+
+# Dependency directories
+packages/
+
+# Editor directories
+.idea/
+.DS_Store
+
+# macOS
+.AppleDouble
+.DS_Store
+Icon?
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# npm configuration
+*.npmrc
+
+# ESLint configuration
+.eslintcache
+
+# Cache directories
+.cache/
+
+.history/

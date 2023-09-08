@@ -1,13 +1,14 @@
 // v1/subscriptionRoutes.js
 
 import express from "express";
+import { createSubscription } from "../../controllers/subscriptionsController.js";
+
 const router = express.Router();
 
 // Route to subscribe a user
-router.route("/").post("/subscribe");
+router.route("/subscribe").post(createSubscription);
 
-// Route to unsubscribe a user
-router.route("/").post("/unsubscribe");
+
 
 // Add more subscription-related routes as needed
 

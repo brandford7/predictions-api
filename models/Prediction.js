@@ -1,35 +1,39 @@
 import mongoose from "mongoose";
 
-const predictionSchema = new mongoose.Schema({
-  match: {
-    type: String,
-    required: true,
-  },
-  competition: {
-    type: String,
-    required: true,
-  },
-  startPeriod: {
-    type: Date,
-    required: true,
-  },
-  tip: {
-    type: String,
-    required: true,
-  },
-  result: {
+const predictionSchema = new mongoose.Schema(
+  {
+    match: {
       type: String,
-      default: null
+      required: true,
+    },
+    competition: {
+      type: String,
+      required: true,
+    },
+    startPeriod: {
+      type: Date,
+      required: true,
+    },
+    tip: {
+      type: String,
+      required: true,
+    },
+    result: {
+      type: String,
+      default: null,
+    },
+    odd: {
+      type: Number,
+    },
+    isVIP: {
+      type: Boolean,
+      default: false, // Set to true for VIP predictions
+    },
+
+    // Add more fields as needed
   },
-  odd: {
-    type: Number,
-  },
-  isVIP: {
-    type: Boolean,
-    default: false, // Set to true for VIP predictions
-  },
-  // Add more fields as needed
-});
+  { timestamps: true }
+);
 
 const Prediction = mongoose.model("Prediction", predictionSchema);
 

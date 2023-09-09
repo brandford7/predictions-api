@@ -4,7 +4,7 @@ import Prediction from "../models/Prediction.js";
 export const getAllPredictions = async (req, res) => {
   try {
     const predictions = await Prediction.find();
-    res.json(predictions);
+    res.json({ total: predictions.length, predictions });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -28,20 +28,42 @@ export const getPredictionById = async (req, res) => {
 // Function to create a new prediction
 export const createPrediction = async (req, res) => {
   try {
-    const { match, competition, startPeriod, tip, result, odd } = req.body;
+    const { match, competition, startPeriod, tip, isVIP, result, odd } =
+      req.body;
+
+     const existingPrediction = await Prediction.findOne({
+       match,
+       competition,
+       startPeriod,
+     });
+
+     if (existingPrediction) {
+       // Check if the dates are the same
+       if (
+         existingPrediction.date &&
+         startPeriod &&
+         existingPrediction.date.toDateString() === startPeriod.toDateString()
+       ) {
+         return res.status(400).json({ message: "Duplicate prediction" });
+       }
+     }
+
 
     const newPrediction = new Prediction({
       match,
       competition,
       startPeriod,
       tip,
+      isVIP,
       result,
       odd,
     });
 
     await newPrediction.save();
 
-    res.status(201).json({ message: "Prediction created successfully" });
+    res
+      .status(201)
+      .json({ newPrediction, message: "Prediction created successfully" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });

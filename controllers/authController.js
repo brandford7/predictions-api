@@ -1,80 +1,69 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import passport from "passport";
-import { Strategy as LocalStrategy } from "passport-local";
-import User from "../models/User.js";
+import User from "../models/User.js"; // Adjust the path to your User model
+
+const secretKey = "your-secret-key"; // Replace with your secure secret key
 
 export const registerUser = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
-    const userExists = User.findOne({ $or: [{ email }, { username }] });
-    if (userExists) {
-      return res
-        .status(400)
-        .json({ message: "Username or email already exists" });
-    }
+    const { email, username, password } = req.body;
 
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = new User({ username, email, password: hashedPassword });
-    res.status(201).json({ message: "User registered successfully" });
+    // Create a new user
+    const user = new User({ email, username, password: hashedPassword });
+    await user.save();
 
-    await newUser.save();
-  } catch (err) {
+    res.json({ message: "Registration successful", user });
+  } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Registration failed" });
   }
 };
 
-export const loginUser = (req, res, next) => {
-  passport.authenticate("local", { session: false }, (err, user) => {
-    if (err) {
-      return next(err);
-    }
+export const loginUser = async (req, res) => {
+  try {
+    const { identifier, password } = req.body;
 
-    if (!user) {
-      return res.status(401).json({ message: "Authentication failed" });
-    }
-
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
+    // Find the user by email or username
+    const user = await User.findOne({
+      $or: [{ email: identifier }, { username: identifier }],
     });
 
-    res.json({ token });
-  })(req, res, next);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Compare the provided password with the stored hashed password
+    const passwordMatch = await user.comparePassword(password);
+
+    if (!passwordMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // Create and send a JWT token upon successful login
+    const token = await user.createJWT();
+
+    res.json({ message: "Login successful", token, username });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Login failed" });
+  }
 };
 
-passport.use(
-  new LocalStrategy(
-    { usernameField: "identifier", passwordField: "password" },
-    async (identifier, password, done) => {
-      try {
-        // Find the user by email or username in the database
-        const user = await User.findOne({
-          $or: [{ email: identifier }, { username: identifier }],
-        });
+export const logoutUser = async (req, res) => {
+  try {
+    // You can include additional logout-related logic here if needed
 
-        // If the user does not exist or the password is incorrect
-        if (!user || !(await bcrypt.compare(password, user.password))) {
-          return done(null, false);
-        }
+    // Clear the token from the client-side (e.g., by removing it from cookies or local storage)
+    // Example for clearing a token cookie:
+    res.clearCookie("jwtToken"); // Replace 'jwtToken' with your actual cookie name
 
-        // If the user and password are correct, return the user
-        return done(null, user);
-      } catch (error) {
-        return done(error);
-      }
-    }
-  )
-);
-
-// Function to log out a user
-export const logoutUser = (req, res) => {
-  // Passport.js provides a `logout` function to clear the user's session
-  req.logout();
-
-  // Optionally, you can clear any tokens stored on the client-side here
-
-  res.json({ message: "User logged out successfully" });
+    // Send a response indicating successful logout
+    res.json({ message: "Logout successful" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Logout failed" });
+  }
 };

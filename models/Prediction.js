@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 
-const predictionSchema = new mongoose.Schema(
+const PredictionSchema = new mongoose.Schema(
   {
-    match: {
+    game: {
       type: String,
       required: true,
     },
@@ -35,6 +35,6 @@ const predictionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Prediction = mongoose.model("Prediction", predictionSchema);
+const Prediction = mongoose.model("Prediction", PredictionSchema);
 
 export default Prediction;

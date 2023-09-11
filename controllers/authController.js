@@ -1,5 +1,3 @@
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import User from "../models/User.js"; // Adjust the path to your User model
 
 const secretKey = "your-secret-key"; // Replace with your secure secret key
@@ -8,11 +6,8 @@ export const registerUser = async (req, res) => {
   try {
     const { email, username, password } = req.body;
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     // Create a new user
-    const user = new User({ email, username, password: hashedPassword });
+    const user = new User({ ...req.body });
     await user.save();
 
     res.json({ message: "Registration successful", user });
@@ -24,12 +19,13 @@ export const registerUser = async (req, res) => {
 
 export const loginUser = async (req, res) => {
   try {
-    const { identifier, password } = req.body;
+    const { email, password } = req.body;
+
+    if (!email || !password)
+      res.status(400).json("Please provide email or username and password");
 
     // Find the user by email or username
-    const user = await User.findOne({
-      $or: [{ email: identifier }, { username: identifier }],
-    });
+    const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -45,13 +41,13 @@ export const loginUser = async (req, res) => {
     // Create and send a JWT token upon successful login
     const token = await user.createJWT();
 
-    res.json({ message: "Login successful", token, username });
+    res.json({ message: "Login successful", token, email });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Login failed" });
   }
 };
-
+/*
 export const logoutUser = async (req, res) => {
   try {
     // You can include additional logout-related logic here if needed
@@ -67,3 +63,4 @@ export const logoutUser = async (req, res) => {
     res.status(500).json({ message: "Logout failed" });
   }
 };
+*/

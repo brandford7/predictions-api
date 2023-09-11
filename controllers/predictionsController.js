@@ -28,29 +28,28 @@ export const getPredictionById = async (req, res) => {
 // Function to create a new prediction
 export const createPrediction = async (req, res) => {
   try {
-    const { match, competition, startPeriod, tip, isVIP, result, odd } =
+    const { game, competition, startPeriod, tip, isVIP, result, odd } =
       req.body;
 
-     const existingPrediction = await Prediction.findOne({
-       match,
-       competition,
-       startPeriod,
-     });
+    const existingPrediction = await Prediction.findOne({
+      game,
+      competition,
+      startPeriod,
+    });
 
-     if (existingPrediction) {
-       // Check if the dates are the same
-       if (
-         existingPrediction.date &&
-         startPeriod &&
-         existingPrediction.date.toDateString() === startPeriod.toDateString()
-       ) {
-         return res.status(400).json({ message: "Duplicate prediction" });
-       }
-     }
-
+    if (existingPrediction) {
+      // Check if the dates are the same
+      if (
+        existingPrediction.date &&
+        startPeriod &&
+        existingPrediction.date.toDateString() === startPeriod.toDateString()
+      ) {
+        return res.status(400).json({ message: "Duplicate prediction" });
+      }
+    }
 
     const newPrediction = new Prediction({
-      match,
+      game,
       competition,
       startPeriod,
       tip,
@@ -73,20 +72,23 @@ export const createPrediction = async (req, res) => {
 // Function to update a prediction by ID
 export const updatePrediction = async (req, res) => {
   try {
-    const { match, competition, startPeriod, tip, result, odd } = req.body;
+    const {
+      params: { id: predictionId },
+      body: { game, competition, startPeriod, tip, isVIP, result, odd },
+    } = req;
 
-    const prediction = await Prediction.findById(req.params.id);
+    const prediction = await Prediction.findByIdAndUpdate(
+      { _id: predictionId },
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
     if (!prediction) {
       return res.status(404).json({ message: "Prediction not found" });
     }
-
-    prediction.match = match;
-    prediction.competition = competition;
-    prediction.startPeriod = startPeriod;
-    prediction.tip = tip;
-    prediction.result = result;
-    prediction.odd = odd;
 
     await prediction.save();
 

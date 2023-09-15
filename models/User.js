@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import config from "../config/config.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import validator from "validator";
 
 const UserSchema = new mongoose.Schema({
   username: {
@@ -20,11 +21,16 @@ const UserSchema = new mongoose.Schema({
     trim: true,
 
     required: [true, "Please enter a valid email address"],
-    match: [
-      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-      "Please provide a valid email",
-    ],
+    validate: {
+      validator: validator.isEmail,
+      message: "Please provide valid email",
+    },
     unique: true,
+  },
+  role: {
+    type: String,
+    enum: ["user", "admin"],
+    default: "user", // By default, users are not admins
   },
   isSubscribed: {
     type: Boolean,
@@ -33,16 +39,19 @@ const UserSchema = new mongoose.Schema({
   // Add more fields as needed
 });
 
-
 UserSchema.pre("save", async function () {
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
 
 UserSchema.methods.createJWT = function () {
-  return jwt.sign({ userId: this._id, name: this.username }, config.jwtSecret, {
-    expiresIn: config.jwtLifetime,
-  });
+  return jwt.sign(
+    { userId: this._id, name: this.username, role:this.role },
+    config.jwtSecret,
+    {
+      expiresIn: config.jwtLifetime,
+    }
+  );
 };
 UserSchema.methods.comparePassword = async function (userPassword) {
   const isMatch = await bcrypt.compare(userPassword, this.password);
@@ -50,6 +59,5 @@ UserSchema.methods.comparePassword = async function (userPassword) {
 };
 
 const User = mongoose.model("User", UserSchema);
-
 
 export default User;

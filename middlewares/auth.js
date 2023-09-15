@@ -1,23 +1,40 @@
-import config from "../middlewares/auth.js";
+import jwt from "jsonwebtoken";
+import config from "../config/config.js";
 
-const verifyToken = async () => {
-  const authHeader = request.headers.authorization;
+export const authenticateUser = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
 
-  console.log(req);
-
-  if (!authHeader || !authHeader.startsWith("Bearer")) {
-    res.status(401).json("Authentication invalid");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Authentication invalid" });
   }
+
   const token = authHeader.split(" ")[1];
 
   try {
     const payload = jwt.verify(token, config.jwtSecret);
-    // attach the user to the job routes
-    req.user = { userId: payload.userId, name: payload.name };
+    req.user = {
+      userId: payload.userId,
+      username: payload.name,
+      email: payload.email,
+      role: payload.role, // Include the user's role in the request
+    };
     next();
   } catch (error) {
-    throw new UnauthenticatedError("Authentication invalid");
+    return res.status(401).json({ message: "Authentication invalid" });
   }
 };
 
-export default verifyToken;
+// roleAuthMiddleware.js
+
+export const checkRole = (role) => {
+  return (req, res, next) => {
+    const user = req.user; // Assuming you have user data in the request object
+    if (user && user.role === role) {
+      // User has the required role, allow the request to proceed
+      next();
+    } else {
+      // User does not have the required role, send an "Access denied" response
+      res.status(403).json({ message: `Access denied. ${role} authorization required.` });
+    }
+  };
+};

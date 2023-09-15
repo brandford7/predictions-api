@@ -11,6 +11,8 @@ const config = {
 
   // CORS (Cross-Origin Resource Sharing) configuration
   allowedOrigins: process.env.ALLOWED_ORIGINS || ["http://localhost:3000"],
+  nodeEnv: process.env.NODE_ENV,
+  paystackSecretKey: process.env.PAYSTACK_SECRET_KEY
 
   // Other configuration options can be added here
 };

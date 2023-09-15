@@ -1,40 +1,55 @@
-// controllers/subscriptionsController.js
-import Stripe from "stripe";
+import config from "../config/config.js";
+import axios from "axios";
+//import User from "../models/User.js";
+import Subscription from "../models/Subscription.js";
+import { StatusCodes } from "http-status-codes";
 
-// Initialize Stripe with your API key
-const stripe = new Stripe("YOUR_STRIPE_API_KEY");
+// Define your route for subscription creation
 
-// Function to create a subscription
 export const createSubscription = async (req, res) => {
+  const { plan } = req.body;
+  const customer = req.user.email;
+
   try {
-    // Get user location from the request (you can replace this with your actual logic)
-    const userLocation = req.body.userLocation; // Example: 'Ghana' or 'USA'
+    // Prepare the request data
+    const requestData = {
+      customer,
+      plan: "PLN_dodg11i31vy0nut",
+    };
 
-    // Define the product and price IDs based on the user's location
-    let productId, priceId;
+    // Make a POST request to Paystack to create the subscription
+    const paystackResponse = await axios.post(
+      "https://api.paystack.co/subscription",
+      requestData,
+      {
+        headers: {
+          Authorization: `Bearer ${config.paystackSecretKey}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-    if (userLocation === "Ghana") {
-      productId = "YOUR_GHANAIAN_PRODUCT_ID";
-      priceId = "YOUR_GHANAIAN_PRICE_ID";
-    } else {
-      productId = "YOUR_FOREIGNER_PRODUCT_ID";
-      priceId = "YOUR_FOREIGNER_PRICE_ID";
-    }
+    // Handle the Paystack response here (e.g., retrieve subscription details)
+    const { data } = paystackResponse;
+    const subscriptionDetails = data.data;
 
-    // Create a customer in Stripe (if not already created)
-    const customer = await stripe.customers.create({
-      // Add customer details (e.g., email)
+    // Create a new Subscription document and save it to MongoDB
+    const subscription = new Subscription({
+      customer: subscriptionDetails.customer,
+      plan: subscriptionDetails.plan,
+      // Add other relevant subscription details here
     });
 
-    // Create a subscription with the selected product and price
-    const subscription = await stripe.subscriptions.create({
-      customer: customer.id,
-      items: [{ price: priceId }],
-    });
+    await subscription.save();
 
-    res.json({ message: "Subscription created successfully", subscription });
+    res.status(StatusCodes.OK).json({
+      message: "Subscription created and saved successfully",
+      subscription,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Paystack subscription creation and saving failed:", error);
+    res
+      .status(500)
+      .json({ message: "Paystack subscription creation and saving failed" });
   }
 };

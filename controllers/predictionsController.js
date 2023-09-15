@@ -1,102 +1,82 @@
+import { StatusCodes } from "http-status-codes";
 import Prediction from "../models/Prediction.js";
+import User from "../models/User.js";
+import { NotFoundError } from "../errors/index.js";
 
 // Function to get all predictions
 export const getAllPredictions = async (req, res) => {
-  try {
-    const predictions = await Prediction.find();
-    res.json({ total: predictions.length, predictions });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
+  // Admin users or subscribed users can see all predictions
+  const predictions = await Prediction.find({});
+
+  res.status(StatusCodes.OK).json({ total: predictions.length, predictions });
+};
+
+// Function to get free predictions
+
+export const getFreePredictions = async (req, res) => {
+  
+  const predictions = await Prediction.find({ isVIP:false });
+
+  res.status(StatusCodes.OK).json({ total: predictions.length, predictions });
+};
+
+// Function to get VIP predictions
+export const getVIPPredictions = async (req, res) => {
+  // Admin users or subscribed users can see all predictions
+  const predictions = await Prediction.find({ isVIP: true });
+
+  res.status(StatusCodes.OK).json({ total: predictions.length, predictions });
 };
 
 // Function to get a specific prediction by ID
 export const getPredictionById = async (req, res) => {
-  try {
-    const prediction = await Prediction.findById(req.params.id);
-    if (!prediction) {
-      return res.status(404).json({ message: "Prediction not found" });
-    }
-    res.json(prediction);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+  const prediction = await Prediction.findById(req.params.id);
+  if (!prediction) {
+    throw new NotFoundError("prediction not found");
   }
+  res.json(prediction);
 };
-
 // Function to create a new prediction
 export const createPrediction = async (req, res) => {
-  try {
-    const { game, competition, startPeriod, tip, isVIP, result, odd } =
-      req.body;
+  const newPrediction = await Prediction.create(req.body);
 
-    const existingPrediction = await Prediction.findOne({
-      game,
-      competition,
-      startPeriod,
-    });
-
-    if (existingPrediction) {
-      // Check if the dates are the same
-      if (
-        existingPrediction.date &&
-        startPeriod &&
-        existingPrediction.date.toDateString() === startPeriod.toDateString()
-      ) {
-        return res.status(400).json({ message: "Duplicate prediction" });
-      }
-    }
-
-    const newPrediction = new Prediction({
-      game,
-      competition,
-      startPeriod,
-      tip,
-      isVIP,
-      result,
-      odd,
-    });
-
-    await newPrediction.save();
-
-    res
-      .status(201)
-      .json({ newPrediction, message: "Prediction created successfully" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
+  res.status(StatusCodes.CREATED).json({
+    prediction: newPrediction,
+    message: "Prediction created successfully",
+  });
 };
 
 // Function to update a prediction by ID
 export const updatePrediction = async (req, res) => {
-  try {
-    const {
-      params: { id: predictionId },
-      body: { game, competition, startPeriod, tip, isVIP, result, odd },
-    } = req;
+  const {
+    params: { id: predictionId },
+    body: { game, competition, startPeriod, tip, isVIP, result, odd },
+  } = req;
 
-    const prediction = await Prediction.findByIdAndUpdate(
-      { _id: predictionId },
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-
-    if (!prediction) {
-      return res.status(404).json({ message: "Prediction not found" });
+  const prediction = await Prediction.findByIdAndUpdate(
+    { _id: predictionId, createdBy: req.user.userId },
+    req.body,
+    {
+      new: true,
+      runValidators: true,
     }
+  );
 
-    await prediction.save();
-
-    res.json({ message: "Prediction updated successfully" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+  if (!prediction) {
+    throw new NotFoundError({ message: "Prediction not found" });
   }
+
+  prediction.game = game;
+  prediction.competition = competition;
+  prediction.startPeriod = startPeriod;
+  prediction.tip = tip;
+  prediction.isVIP = isVIP;
+  prediction.result = result;
+  prediction.odd = odd;
+
+  await prediction.save();
+
+  res.json({ message: "Prediction updated successfully" });
 };
 
 // Function to delete a prediction by ID
@@ -104,7 +84,7 @@ export const deletePrediction = async (req, res) => {
   try {
     const prediction = await Prediction.findByIdAndRemove(req.params.id);
     if (!prediction) {
-      return res.status(404).json({ message: "Prediction not found" });
+      throw new NotFoundError({ message: "Prediction not found" });
     }
     res.json({ message: "Prediction deleted successfully" });
   } catch (error) {

@@ -28,11 +28,12 @@ const PredictionSchema = new mongoose.Schema(
     isVIP: {
       type: Boolean,
       default: false, // Set to true for VIP predictions
-    },
-
+    }
+   
+    
     // Add more fields as needed
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
 const Prediction = mongoose.model("Prediction", PredictionSchema);

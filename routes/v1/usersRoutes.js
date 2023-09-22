@@ -12,7 +12,7 @@ const router = express.Router();
 router.route("/").get(authenticateUser, checkRole("admin"), getAllUsers);
 router.route("/:id").delete(deleteUser);
 router
-  .route("/profile/:id")
+  .route("/profile")
   .get(authenticateUser, getUserProfile)
   .put(authenticateUser, updateUserProfile);
 

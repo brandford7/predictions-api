@@ -3,7 +3,7 @@ import {
   createPrediction,
   deletePrediction,
   getAllPredictions,
-  getFreePredictions,
+
   getPredictionById,
   updatePrediction,
 } from "../../controllers/predictionsController.js";
@@ -13,7 +13,7 @@ const router = express.Router();
 
 router
   .route("/")
-  .get( getAllPredictions).get(getFreePredictions)
+  .get( getAllPredictions,)
   .post(authenticateUser, checkRole("admin"), createPrediction);
 router
   .route("/:id")

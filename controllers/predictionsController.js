@@ -11,22 +11,6 @@ export const getAllPredictions = async (req, res) => {
   res.status(StatusCodes.OK).json({ total: predictions.length, predictions });
 };
 
-// Function to get free predictions
-
-export const getFreePredictions = async (req, res) => {
-  
-  const predictions = await Prediction.find({ isVIP:false });
-
-  res.status(StatusCodes.OK).json({ total: predictions.length, predictions });
-};
-
-// Function to get VIP predictions
-export const getVIPPredictions = async (req, res) => {
-  // Admin users or subscribed users can see all predictions
-  const predictions = await Prediction.find({ isVIP: true });
-
-  res.status(StatusCodes.OK).json({ total: predictions.length, predictions });
-};
 
 // Function to get a specific prediction by ID
 export const getPredictionById = async (req, res) => {

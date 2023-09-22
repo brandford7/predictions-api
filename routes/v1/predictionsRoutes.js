@@ -13,7 +13,7 @@ const router = express.Router();
 
 router
   .route("/")
-  .get(authenticateUser, checkRole("admin"), getAllPredictions)
+  .get(/*authenticateUser, checkRole("admin"),*/ getAllPredictions)
   .post(authenticateUser, checkRole("admin"), createPrediction);
 router
   .route("/:id")

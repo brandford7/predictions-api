@@ -5,10 +5,42 @@ import { NotFoundError } from "../errors/index.js";
 
 // Function to get all predictions
 export const getAllPredictions = async (req, res) => {
-  // Admin users or subscribed users can see all predictions
-  const predictions = await Prediction.find({});
+  const page = parseInt(req.query.page) || 1;
+  const pageSize = parseInt(req.query.pageSize) || 10;
+  const skip = (page - 1) * pageSize;
 
-  res.status(StatusCodes.OK).json({ total: predictions.length, predictions });
+  const filter = {};
+  if (req.query.isVIP) {
+    filter.isVIP = req.query.isVIP === "true";
+  }
+
+  if (req.query.search) {
+    const searchQuery = new RegExp(req.query.search, "i");
+    filter.$or = [
+      { game: searchQuery },
+      { competition: searchQuery },
+      // Add more fields to search as needed
+    ];
+  }
+
+  const sortField = req.query.sort || "createdAt";
+  const sortDirection = req.query.order === "asc" ? 1 : -1;
+  const sortOptions = {};
+  sortOptions[sortField] = sortDirection;
+
+  const predictions = await Prediction.find(filter)
+    .sort(sortOptions)
+    .skip(skip)
+    .limit(pageSize);
+
+  const totalPredictions = await Prediction.countDocuments(filter);
+
+  res.status(StatusCodes.OK).json({
+    total: totalPredictions,
+    page,
+    pageSize,
+    predictions,
+  });
 };
 
 

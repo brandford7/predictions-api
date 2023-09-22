@@ -13,13 +13,13 @@ const router = express.Router();
 
 router
   .route("/")
-  .get( getAllPredictions,)
+  .get(authenticateUser, checkRole("admin"), getAllPredictions)
   .post(authenticateUser, checkRole("admin"), createPrediction);
 router
   .route("/:id")
   .get(authenticateUser, getPredictionById)
-  .delete(authenticateUser, deletePrediction)
-  .put(authenticateUser, updatePrediction);
+  .delete(authenticateUser, checkRole("admin"), deletePrediction)
+  .put(authenticateUser, checkRole("admin"), updatePrediction);
 
 export default router;
 

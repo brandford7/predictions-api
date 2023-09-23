@@ -14,45 +14,67 @@ const paystack = new Paystack(config.paystackSecretKey);
 export const registerUser = async (req, res) => {
   const { email, username, password } = req.body;
 
-  const emailAlreadyExists = await User.findOne({ email });
-  if (emailAlreadyExists) {
-    throw new BadRequestError("Email already exists");
-  }
-
-  // first registered user is an admin
-  const isFirstAccount = (await User.countDocuments({})) === 0;
-  const role = isFirstAccount ? "admin" : "user";
-  const user = new User({ username, email, password, role });
-  const token = user.createJWT();
-
   try {
+    // Check if the email already exists
+    const emailAlreadyExists = await User.findOne({ email });
+    if (emailAlreadyExists) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: "Email already exists" });
+    }
+
+    // Determine the user's role (admin or user)
+    const isFirstAccount = (await User.countDocuments({})) === 0;
+    const role = isFirstAccount ? "admin" : "user";
+
     // Create a Paystack customer with the user's email
     const createCustomerResponse = await paystack.customer.create({ email });
 
-    if (createCustomerResponse.status === false) {
-      console.log("Error creating customer: ", createCustomerResponse.message);
+    if (!createCustomerResponse.status) {
+      console.error(
+        "Error creating customer: ",
+        createCustomerResponse.message
+      );
       return res
-        .status(400)
-        .send(`Error creating customer: ${createCustomerResponse.message}`);
+        .status(StatusCodes.BAD_REQUEST)
+        .json({
+          message: `Error creating customer: ${createCustomerResponse.message}`,
+        });
     }
 
     // Extract the customer_code from the Paystack API response
     const customer = createCustomerResponse.data;
 
-    // Associate the customer_code with the user and save the user
-    user.customerCode = customer.customer_code;
+    // Create a user with the provided data and associate the customer_code
+    const user = new User({
+      username,
+      email,
+      password,
+      role,
+      customer: {
+        customerCode: customer.customer_code,
+      },
+    });
+
+    // Save the user with the associated customer_code
     await user.save();
 
-    res
+    // Generate a token (you need to define the createJWT method in your User model)
+    const token = user.createJWT();
+
+    // Return the registration success response
+    return res
       .status(StatusCodes.CREATED)
       .json({ message: "Registration successful", user, token, customer });
   } catch (error) {
     console.error(error);
-    res
+    return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Registration failed" });
   }
 };
+
+
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
 

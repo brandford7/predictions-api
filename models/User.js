@@ -19,25 +19,39 @@ const UserSchema = new mongoose.Schema({
   email: {
     type: String,
     trim: true,
-
     required: [true, "Please enter a valid email address"],
+    unique: true,
     validate: {
       validator: validator.isEmail,
-      message: "Please provide valid email",
+      message: "Please provide a valid email",
     },
-    unique: true,
   },
   role: {
     type: String,
     enum: ["user", "admin"],
-    default: "user", // By default, users are not admins
+    default: "user",
   },
   isSubscribed: {
     type: Boolean,
-    default: false, // Set to true when a user subscribes
+    default: false,
   },
-  // Add more fields as needed
+  customer: {
+    customerCode: {
+      type: String,
+      unique: true,
+      required: true,
+    },
+    subscriptions: [
+      {
+        // Define subscription-related fields
+        // You can create a separate Subscription schema if needed
+      },
+    ],
+    // Add more customer-specific fields as needed
+  },
+  // Add more user-related fields as needed
 });
+
 
 UserSchema.pre("save", async function () {
   const salt = await bcrypt.genSalt(10);

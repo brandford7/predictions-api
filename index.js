@@ -8,7 +8,7 @@ import rateLimit from "express-rate-limit";
 import notFoundMiddleware from "./middlewares/not-found.js";
 import errorHandlerMiddleware from "./middlewares/error-handler.js";
 import "express-async-errors";
-import cors from 'cors'
+import cors from "cors";
 
 import dotenv from "dotenv";
 import { startServer } from "./server.js";
@@ -16,7 +16,7 @@ import { startServer } from "./server.js";
 export const app = express();
 dotenv.config();
 
-app.use(cors())
+app.use(cors());
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes

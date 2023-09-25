@@ -35,7 +35,7 @@ export const getUserProfile = async (req, res) => {
   try {
     // Get the user's ID from the authenticated user
     const userId = req.user.userId; 
-    console.log("User ID:", userId);
+    
     // Fetch user data from the database
     const user = await User.findById(userId); // Replace 'User' with your actual User model
 
@@ -46,7 +46,7 @@ export const getUserProfile = async (req, res) => {
     }
 
     // Get user's email, username, and subscription status from the database
-    const { email, username, isSubscribed } = user;
+    const { email, username,  } = user;
 
     // Fetch user's subscriptions using the associated customer_code
     const fetchSubscriptionsResponse = await paystack.subscription.list({
@@ -73,7 +73,7 @@ export const getUserProfile = async (req, res) => {
     // Send the user data and subscriptions as a response
     res
       .status(StatusCodes.OK)
-      .json({ email, username, isSubscribed, subscriptions });
+      .json({ email, username, subscriptions });
   } catch (error) {
     console.error("Error fetching user profile:", error);
     res

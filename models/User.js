@@ -31,10 +31,7 @@ const UserSchema = new mongoose.Schema({
     enum: ["user", "admin"],
     default: "user",
   },
-  isSubscribed: {
-    type: Boolean,
-    default: false,
-  },
+
   customer: {
     customerCode: {
       type: String,
@@ -43,8 +40,41 @@ const UserSchema = new mongoose.Schema({
     },
     subscriptions: [
       {
-        // Define subscription-related fields
-        // You can create a separate Subscription schema if needed
+        // Include additional subscription fields here
+        customer: {
+          type: Number, // Example data type
+        },
+        plan: {
+          type: Number, // Example data type
+        },
+        integration: {
+          type: Number, // Example data type
+        },
+        domain: {
+          type: String, // Example data type
+        },
+        start: {
+          type: Number, // Example data type
+        },
+        status: {
+          type: String, // Example data type
+        },
+        quantity: {
+          type: Number, // Example data type
+        },
+        amount: {
+          type: Number, // Example data type
+        },
+        subscription_code: {
+          type: String, // Example data type
+        },
+        email_token: {
+          type: String, // Example data type
+        },
+        authorization: {
+          type: Number, // Example data type
+        },
+        // Add other fields as needed
       },
     ],
     // Add more customer-specific fields as needed

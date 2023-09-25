@@ -17,7 +17,7 @@ const router = express.Router();
 router.route("/subscription").get(authenticateUser, fetchSubscriptions);
 router.route("/create-subscription").post(authenticateUser, createSubscription);
 router.route("/initialize-transaction-with-plan").post(initializeTransaction);
-router.route("/plans").get(authenticateUser, getPlans);
+router.route("/plans").get( getPlans);
 router
   .route("/update-payment-method")
   .get(authenticateUser, updatePaymentMethod);

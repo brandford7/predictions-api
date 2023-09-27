@@ -38,50 +38,12 @@ const UserSchema = new mongoose.Schema({
       unique: true,
       required: true,
     },
-    subscriptions: [
-      {
-        // Include additional subscription fields here
-        customer: {
-          type: Number, // Example data type
-        },
-        plan: {
-          type: Number, // Example data type
-        },
-        integration: {
-          type: Number, // Example data type
-        },
-        domain: {
-          type: String, // Example data type
-        },
-        start: {
-          type: Number, // Example data type
-        },
-        status: {
-          type: String, // Example data type
-        },
-        quantity: {
-          type: Number, // Example data type
-        },
-        amount: {
-          type: Number, // Example data type
-        },
-        subscription_code: {
-          type: String, // Example data type
-        },
-        email_token: {
-          type: String, // Example data type
-        },
-        authorization: {
-          type: Number, // Example data type
-        },
-        // Add other fields as needed
-      },
-    ],
+    id: { type: String, required: true, unique: true },
+    subscriptions: [],
     // Add more customer-specific fields as needed
   },
   // Add more user-related fields as needed
 });
-
 
 UserSchema.pre("save", async function () {
   const salt = await bcrypt.genSalt(10);
@@ -90,7 +52,7 @@ UserSchema.pre("save", async function () {
 
 UserSchema.methods.createJWT = function () {
   return jwt.sign(
-    { userId: this._id, name: this.username, role:this.role },
+    { userId: this._id, name: this.username, role: this.role },
     config.jwtSecret,
     {
       expiresIn: config.jwtLifetime,

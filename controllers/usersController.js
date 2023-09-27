@@ -9,7 +9,8 @@ const paystack = new Paystack(config.paystackSecretKey);
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find({});
-    res.json({ count: users.length, users });
+    
+    res.json({ count: users.length, users,});
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -34,8 +35,8 @@ export const deleteUser = async (req, res) => {
 export const getUserProfile = async (req, res) => {
   try {
     // Get the user's ID from the authenticated user
-    const userId = req.user.userId; 
-    
+    const userId = req.user.userId;
+
     // Fetch user data from the database
     const user = await User.findById(userId); // Replace 'User' with your actual User model
 
@@ -45,13 +46,15 @@ export const getUserProfile = async (req, res) => {
         .json({ message: "User not found" });
     }
 
-    // Get user's email, username, and subscription status from the database
-    const { email, username,  } = user;
+    // Get user's email and username from the database
+    const { email, username } = user;
 
     // Fetch user's subscriptions using the associated customer_code
     const fetchSubscriptionsResponse = await paystack.subscription.list({
       customer: user.customer.customerCode,
     });
+
+    console.log("Fetch Subscriptions Response:", fetchSubscriptionsResponse);
 
     if (!fetchSubscriptionsResponse.status) {
       console.error(
@@ -71,9 +74,7 @@ export const getUserProfile = async (req, res) => {
     );
 
     // Send the user data and subscriptions as a response
-    res
-      .status(StatusCodes.OK)
-      .json({ email, username, subscriptions });
+    res.status(StatusCodes.OK).json({ email, username, subscriptions });
   } catch (error) {
     console.error("Error fetching user profile:", error);
     res

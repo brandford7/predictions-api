@@ -53,6 +53,7 @@ export const registerUser = async (req, res) => {
       role,
       customer: {
         customerCode: customer.customer_code,
+        id: customer.id
       },
     });
 

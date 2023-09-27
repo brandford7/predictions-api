@@ -4,6 +4,7 @@ import axios from "axios";
 import Subscription from "../models/Subscription.js";
 /*import { StatusCodes } from "http-status-codes";*/
 import Paystack from "@paystack/paystack-sdk";
+import User from "../models/User.js";
 
 const paystack = new Paystack(config.paystackSecretKey);
 
@@ -21,30 +22,22 @@ export const getPlans = async (req, res) => {
       .send(`Error fetching subscriptions: ${fetchPlansResponse.message}`);
   }
 
-  /*const plansToSave = fetchPlansResponse.data.map((plan) => ({
-    name: plan.name,
-    description: plan.description,
-    amount: plan.amount,
-    interval: plan.interval,
-    currency: plan.currency,
-    // Map other fields as needed
-  }));
-
-  const savedPlans = await Subscription.create(plansToSave);
-*/
-
   return res.status(200).send(fetchPlansResponse.data);
 };
 export const fetchSubscriptions = async (req, res) => {
   try {
-    let { customer } = req.query;
+    const userId = req.user.userId; // Replace with your actual user identification method
 
-    if (!customer) {
+    const user = await User.findById(userId);
+
+    const customerId = user.customer?.customerCode || null;
+    console.log(customerId);
+    if (!customerId) {
       throw Error("Please include a valid customer ID");
     }
 
     let fetchSubscriptionsResponse = await paystack.subscription.list({
-      customer,
+      customerId,
     });
 
     if (fetchSubscriptionsResponse.status === false) {
@@ -72,39 +65,35 @@ export const fetchSubscriptions = async (req, res) => {
   }
 };
 
-export const initializeTransaction = async () => {
-  async (req, res) => {
-    try {
-      let { email, amount, plan } = req.body;
+export const initializeTransaction = async (req, res) => {
+  try {
+    let { email, amount, plan } = req.body;
 
-      if (!email || !amount || !plan) {
-        throw Error(
-          "Please provide a valid customer email, amount to charge, and plan code"
-        );
-      }
-
-      let initializeTransactionResponse = await paystack.transaction.initialize(
-        {
-          email,
-          amount,
-          plan,
-          channels: ["card"], // limiting the checkout to show card, as it's the only channel that subscriptions are currently available through
-          callback_url: `https://successsecretsbet.com`,
-        }
+    if (!email || !amount || !plan) {
+      throw Error(
+        "Please provide a valid customer email, amount to charge, and plan code"
       );
-
-      if (initializeTransactionResponse.status === false) {
-        return console.log(
-          "Error initializing transaction: ",
-          initializeTransactionResponse.message
-        );
-      }
-      let transaction = initializeTransactionResponse.data;
-      return res.status(200).send(transaction);
-    } catch (error) {
-      return res.status(400).send(error.message);
     }
-  };
+
+    let initializeTransactionResponse = await paystack.transaction.initialize({
+      email,
+      amount,
+      plan,
+      channels: ["card"], // limiting the checkout to show card, as it's the only channel that subscriptions are currently available through
+      callback_url: `https://successsecretsbet.com`,
+    });
+
+    if (initializeTransactionResponse.status === false) {
+      return console.log(
+        "Error initializing transaction: ",
+        initializeTransactionResponse.message
+      );
+    }
+    let transaction = initializeTransactionResponse.data;
+    return res.status(200).send(transaction);
+  } catch (error) {
+    return res.status(400).send(error.message);
+  }
 };
 
 export const createSubscription = async (req, res) => {
@@ -156,7 +145,7 @@ export const cancelSubscription = async (req, res) => {
   }
 };
 
- export const updatePaymentMethod= async (req, res) => {
+export const updatePaymentMethod = async (req, res) => {
   try {
     const { subscription_code } = req.query;
     const manageSubscriptionLinkResponse =

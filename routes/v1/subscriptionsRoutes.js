@@ -14,14 +14,14 @@ import { authenticateUser, checkRole } from "../../middlewares/auth.js";
 const router = express.Router();
 
 // Route to subscribe a user
-router.route("/subscription").get( fetchSubscriptions);
-router.route("/create-subscription").post( createSubscription);
+router.route("/subscription").get(authenticateUser, fetchSubscriptions);
+router.route("/create-subscription").post(createSubscription);
 router.route("/initialize-transaction-with-plan").post(initializeTransaction);
-router.route("/plans").get( getPlans);
+router.route("/plans").get(getPlans);
 router
   .route("/update-payment-method")
   .get(authenticateUser, updatePaymentMethod);
-router.route("/cancel-subscription").post( cancelSubscription);
+router.route("/cancel-subscription").post(cancelSubscription);
 
 // Add more subscription-related routes as needed
 

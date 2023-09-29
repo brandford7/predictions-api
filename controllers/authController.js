@@ -12,7 +12,7 @@ import config from "../config/config.js";
 const paystack = new Paystack(config.paystackSecretKey);
 
 export const registerUser = async (req, res) => {
-  const { email, username, password,role } = req.body;
+  const { email, username, password } = req.body;
 
   try {
     // Check if the email already exists
@@ -42,9 +42,9 @@ export const registerUser = async (req, res) => {
 
     // Extract the customer_code from the Paystack API response
     const customer = createCustomerResponse.data;
-  
+  const customerId =customer.id
     const fetchSubscriptionsResponse = await paystack.subscription.list({
-      email
+      customerId
     });
 
      let subscriptions = fetchSubscriptionsResponse.data.filter(

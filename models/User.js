@@ -36,13 +36,10 @@ const UserSchema = new mongoose.Schema({
     customerCode: {
       type: String,
       unique: true,
-      required: true,
     },
-    id: { type: String, required: true, unique: true },
-    subscriptions: [],
+
     // Add more customer-specific fields as needed
   },
-  // Add more user-related fields as needed
 });
 
 UserSchema.pre("save", async function () {

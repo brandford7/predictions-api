@@ -12,7 +12,7 @@ import config from "../config/config.js";
 const paystack = new Paystack(config.paystackSecretKey);
 
 export const registerUser = async (req, res) => {
-  const { email, username, password } = req.body;
+  const { email, username, password,role } = req.body;
 
   try {
     // Check if the email already exists
@@ -35,15 +35,23 @@ export const registerUser = async (req, res) => {
         "Error creating customer: ",
         createCustomerResponse.message
       );
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({
-          message: `Error creating customer: ${createCustomerResponse.message}`,
-        });
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: `Error creating customer: ${createCustomerResponse.message}`,
+      });
     }
 
     // Extract the customer_code from the Paystack API response
     const customer = createCustomerResponse.data;
+  
+    const fetchSubscriptionsResponse = await paystack.subscription.list({
+      email
+    });
+
+     let subscriptions = fetchSubscriptionsResponse.data.filter(
+      (subscription) =>
+        subscription.status === "active" ||
+        subscription.status === "non-renewing"
+    );
 
     // Create a user with the provided data and associate the customer_code
     const user = new User({
@@ -51,10 +59,8 @@ export const registerUser = async (req, res) => {
       email,
       password,
       role,
-      customer: {
-        customerCode: customer.customer_code,
-        id: customer.id
-      },
+      customer
+     
     });
 
     // Save the user with the associated customer_code
@@ -74,7 +80,6 @@ export const registerUser = async (req, res) => {
       .json({ message: "Registration failed" });
   }
 };
-
 
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;

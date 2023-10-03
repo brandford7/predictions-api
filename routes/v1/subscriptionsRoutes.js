@@ -20,7 +20,7 @@ router.route("/initialize-transaction-with-plan").post(initializeTransaction);
 router.route("/plans").get(getPlans);
 router
   .route("/update-payment-method")
-  .get(authenticateUser, updatePaymentMethod);
+  .get( updatePaymentMethod);
 router.route("/cancel-subscription").post(cancelSubscription);
 
 // Add more subscription-related routes as needed

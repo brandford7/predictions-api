@@ -34,8 +34,8 @@ export const fetchSubscriptions = async (req, res) => {
       return NotFoundError("User not found");
     }
     const  customer = user.customer;
-    const customerId = customer?.id || null;
-    console.log(customerId);
+    const customerId = customer?.customerId || null;
+    
     if (!customerId) {
       throw Error("Please include a valid customer ID");
     }

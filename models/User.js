@@ -37,6 +37,7 @@ const UserSchema = new mongoose.Schema({
       type: String,
       unique: true,
     },
+    customerId: { type: Number, unique: true },
 
     // Add more customer-specific fields as needed
   },

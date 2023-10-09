@@ -11,6 +11,7 @@ import config from "../config/config.js";
 
 const paystack = new Paystack(config.paystackSecretKey);
 
+
 export const registerUser = async (req, res) => {
   const { email, username, password } = req.body;
 
@@ -40,41 +41,40 @@ export const registerUser = async (req, res) => {
       });
     }
 
-    // Extract the customer_code from the Paystack API response
-    const customer = createCustomerResponse.data;
-  const customerId =customer.id
-    const fetchSubscriptionsResponse = await paystack.subscription.list({
-      customerId
-    });
+    // Extract the customerCode and customerId from the Paystack API response
+    const { customer_code: customerCode, id: customerId } =
+      createCustomerResponse.data;
 
-     let subscriptions = fetchSubscriptionsResponse.data.filter(
-      (subscription) =>
-        subscription.status === "active" ||
-        subscription.status === "non-renewing"
-    );
-
-    // Create a user with the provided data and associate the customer_code
+    // Create a user with the provided data and associate the customerCode and customerId
     const user = new User({
       username,
       email,
       password,
       role,
-      customer
-     
+      customer: {
+        customerCode,
+        customerId,
+      },
     });
 
-    // Save the user with the associated customer_code
+    // Save the user with the associated customerCode and customerId
     await user.save();
 
     // Generate a token (you need to define the createJWT method in your User model)
     const token = user.createJWT();
 
-    // Return the registration success response
-    return res
-      .status(StatusCodes.CREATED)
-      .json({ message: "Registration successful", user, token, customer });
+    console.log("User object before sending response:", user);
+    // Return the registration success response with customerCode, customerId, and user ID
+    return res.status(StatusCodes.CREATED).json({
+      message: "Registration successful",
+      user,
+      token,
+      customerCode: user.customer.customerCode,
+      customerId: user.customer.customerId, // Access customerId within the customer object
+    
+    });
   } catch (error) {
-    console.error(error);
+    console.error("Error during registration:", error);
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Registration failed" });

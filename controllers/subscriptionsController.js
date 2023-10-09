@@ -5,6 +5,7 @@ import Subscription from "../models/Subscription.js";
 /*import { StatusCodes } from "http-status-codes";*/
 import Paystack from "@paystack/paystack-sdk";
 import User from "../models/User.js";
+import NotFoundError from "../errors/not-found.js";
 
 const paystack = new Paystack(config.paystackSecretKey);
 
@@ -29,8 +30,11 @@ export const fetchSubscriptions = async (req, res) => {
     const userId = req.user.userId; // Replace with your actual user identification method
 
     const user = await User.findById(userId);
-
-    const customerId = user.customer?.customerCode || null;
+    if (!user) {
+      return NotFoundError("User not found");
+    }
+    const  customer = user.customer;
+    const customerId = customer?.id || null;
     console.log(customerId);
     if (!customerId) {
       throw Error("Please include a valid customer ID");

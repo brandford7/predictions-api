@@ -9,7 +9,7 @@ import {
   initializeTransaction,
   updatePaymentMethod,
 } from "../../controllers/subscriptionsController.js";
-import { authenticateUser, checkRole } from "../../middlewares/auth.js";
+import { authenticateUser } from "../../middlewares/auth.js";
 
 const router = express.Router();
 

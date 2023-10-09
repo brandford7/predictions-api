@@ -47,35 +47,11 @@ export const getUserProfile = async (req, res) => {
     }
 
     // Get user's email and username from the database
-    const { email, username, customer } = user;
-
+    let { email, username, customer } = user;
     
-    const customerId = customer.id;
-    console.log(customerId);
-    // Fetch user's subscriptions using the associated customer_code
-    const fetchSubscriptionsResponse = await paystack.subscription.list({
-      customerId,
-    });
-
-    if (!fetchSubscriptionsResponse.status) {
-      console.error(
-        "Error fetching subscriptions: ",
-        fetchSubscriptionsResponse.message
-      );
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: `Error fetching subscriptions: ${fetchSubscriptionsResponse.message}`,
-      });
-    }
-
-    // Filter active and non-renewing subscriptions
-    const subscriptions = fetchSubscriptionsResponse.data.filter(
-      (subscription) =>
-        subscription.status === "active" ||
-        subscription.status === "non-renewing"
-    );
 
     // Send the user data and subscriptions as a response
-    res.status(StatusCodes.OK).json({ email, username, subscriptions });
+    res.status(StatusCodes.OK).json({ email, username, customer });
   } catch (error) {
     console.error("Error fetching user profile:", error);
     res

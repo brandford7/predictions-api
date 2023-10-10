@@ -23,6 +23,7 @@ const limiter = rateLimit({
   max: 5, // Limit to 5 requests per 15 minutes
 });
 
+app.use(limiter)
 //middlewares
 app.use(express.json());
 

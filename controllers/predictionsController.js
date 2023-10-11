@@ -1,15 +1,16 @@
-import { StatusCodes } from "http-status-codes";
+
 import Prediction from "../models/Prediction.js";
 import User from "../models/User.js";
 import { NotFoundError } from "../errors/index.js";
+import { StatusCodes } from "http-status-codes";
 
-// Function to get all predictions
 export const getAllPredictions = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const pageSize = parseInt(req.query.pageSize) || 10;
   const skip = (page - 1) * pageSize;
 
   const filter = {};
+
   if (req.query.isVIP) {
     filter.isVIP = req.query.isVIP === "true";
   }
@@ -19,30 +20,35 @@ export const getAllPredictions = async (req, res) => {
     filter.$or = [
       { game: searchQuery },
       { competition: searchQuery },
+      { status: searchQuery },
       // Add more fields to search as needed
     ];
   }
 
   const sortField = req.query.sort || "createdAt";
   const sortDirection = req.query.order === "asc" ? 1 : -1;
-  const sortOptions = {};
-  sortOptions[sortField] = sortDirection;
 
-  const predictions = await Prediction.find(filter)
-    .sort(sortOptions)
-    .skip(skip)
-    .limit(pageSize);
+  try {
+    const predictions = await Prediction.find(filter)
+      .sort({ [sortField]: sortDirection })
+      .skip(skip)
+      .limit(pageSize);
 
-  const totalPredictions = await Prediction.countDocuments(filter);
+    const totalPredictions = await Prediction.countDocuments(filter);
 
-  res.status(StatusCodes.OK).json({
-    total: totalPredictions,
-    page,
-    pageSize,
-    predictions,
-  });
+    res.status(StatusCodes.OK).json({
+      total: totalPredictions,
+      page,
+      pageSize,
+      predictions,
+    });
+  } catch (error) {
+    // Handle any errors (e.g., database errors)
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: "Internal server error" });
+  }
 };
-
 
 // Function to get a specific prediction by ID
 export const getPredictionById = async (req, res) => {
@@ -66,7 +72,7 @@ export const createPrediction = async (req, res) => {
 export const updatePrediction = async (req, res) => {
   const {
     params: { id: predictionId },
-    body: { game, competition, startPeriod, tip, isVIP, result, odd },
+    body: { game, competition, startPeriod, tip, isVIP, result, odd,status },
   } = req;
 
   const prediction = await Prediction.findByIdAndUpdate(
@@ -89,6 +95,7 @@ export const updatePrediction = async (req, res) => {
   prediction.isVIP = isVIP;
   prediction.result = result;
   prediction.odd = odd;
+  prediction.status =status
 
   await prediction.save();
 

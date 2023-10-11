@@ -20,7 +20,7 @@ const PredictionSchema = new mongoose.Schema(
     },
     result: {
       type: String,
-      default: null,
+      default: "pending",
     },
     odd: {
       type: Number,
@@ -28,9 +28,13 @@ const PredictionSchema = new mongoose.Schema(
     isVIP: {
       type: Boolean,
       default: false, // Set to true for VIP predictions
-    }
-   
-    
+    },
+    status: {
+      type: String,
+      enum: ["pending", "won","lost"],
+      default: "pending",
+    },
+
     // Add more fields as needed
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }

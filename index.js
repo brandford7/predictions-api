@@ -1,5 +1,6 @@
 import express from "express";
-import config from "./config/config.js";
+import xss from "xss";
+import helmet from 'helmet'
 import authRoutes from "./routes/v1/authRoutes.js";
 import predictionsRoutes from "./routes/v1/predictionsRoutes.js";
 import usersRoutes from "./routes/v1/usersRoutes.js";
@@ -16,16 +17,36 @@ import { startServer } from "./server.js";
 export const app = express();
 dotenv.config();
 
-app.use(cors());
-
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5, // Limit to 5 requests per 15 minutes
 });
 
-app.use(limiter)
+app.use(limiter);
 //middlewares
 app.use(express.json());
+app.use(helmet());
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) {
+      // For requests without an origin (e.g., same-origin requests)
+      callback(null, true);
+    } else if (origin === "http://localhost:3000") {
+      // Allow requests from 'http://localhost:yourPort'
+      callback(null, true);
+    } else if (origin === "https://success-vip.vercel.app") {
+      // Allow requests from 'https://success-vip.vercel.app'
+      callback(null, true);
+    } else {
+      // Deny requests from all other origins
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+};
+app.use(cors(corsOptions));
+var html = xss('<script>alert("xss");</script>');
+console.log(html);
 
 //routes
 app.get("/", (req, res) => {

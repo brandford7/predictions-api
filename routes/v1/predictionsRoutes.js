@@ -19,7 +19,7 @@ router
   .route("/:id")
   .get(authenticateUser, getPredictionById)
   .delete(authenticateUser, checkRole("admin"), deletePrediction)
-  .put(authenticateUser, checkRole("admin"), updatePrediction);
+  .patch(authenticateUser, checkRole("admin"), updatePrediction);
 
 export default router;
 

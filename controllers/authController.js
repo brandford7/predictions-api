@@ -63,8 +63,6 @@ export const registerUser = async (req, res) => {
     // Generate a token (you need to define the createJWT method in your User model)
     const token = user.createJWT();
 
-    console.log("User object before sending response:", user);
-    // Return the registration success response with customerCode, customerId, and user ID
     return res.status(StatusCodes.CREATED).json({
       message: "Registration successful",
       user,
@@ -84,12 +82,14 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
+
   if (!email || !password) {
     throw new BadRequestError("Please provide email and password");
   }
+const lowercaseEmail = email.toLowerCase();
 
   // Find the user by email or username
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email:lowercaseEmail });
 
   if (!user) {
     throw new NotFoundError("user not found");

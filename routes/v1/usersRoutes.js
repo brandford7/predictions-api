@@ -14,6 +14,6 @@ router.route("/:id").delete(deleteUser);
 router
   .route("/profile")
   .get(authenticateUser, getUserProfile)
-  .put(authenticateUser, updateUserProfile);
+  .patch(authenticateUser, updateUserProfile);
 
 export default router;

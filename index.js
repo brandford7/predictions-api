@@ -27,24 +27,9 @@ app.use(limiter);
 app.use(express.json());
 app.use(helmet());
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin) {
-      // For requests without an origin (e.g., same-origin requests)
-      callback(null, true);
-    } else if (origin === "http://localhost:3000") {
-      // Allow requests from 'http://localhost:yourPort'
-      callback(null, true);
-    } else if (origin === "https://success-vip.vercel.app") {
-      // Allow requests from 'https://success-vip.vercel.app'
-      callback(null, true);
-    } else {
-      // Deny requests from all other origins
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-};
-app.use(cors(corsOptions));
+
+
+app.options('*', cors());
 var html = xss('<script>alert("xss");</script>');
 console.log(html);
 

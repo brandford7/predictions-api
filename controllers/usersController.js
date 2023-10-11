@@ -47,7 +47,7 @@ export const getUserProfile = async (req, res) => {
     }
 
     // Get user's email and username from the database
-    let { email, username, customer } = user;
+    let { email, username, customer,role } = user;
     
 
     // Send the user data and subscriptions as a response

@@ -107,7 +107,7 @@ const lowercaseEmail = email.toLowerCase();
 
   res
     .status(StatusCodes.OK)
-    .json({ user: user.username, token, role: user.role });
+    .json({ user:{name: user.username, role: user.role}, token });
 };
 
 export const logoutUser = async (req, res) => {

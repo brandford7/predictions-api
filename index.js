@@ -29,7 +29,7 @@ app.use(helmet());
 
 
 
-app.options('*', cors());
+app.use(cors());
 var html = xss('<script>alert("xss");</script>');
 console.log(html);
 

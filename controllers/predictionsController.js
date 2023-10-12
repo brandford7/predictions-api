@@ -32,7 +32,7 @@ export const getAllPredictions = async (req, res) => {
     const predictions = await Prediction.find(filter)
       .sort({ [sortField]: sortDirection })
       .skip(skip)
-      .limit(pageSize);
+      .limit(pageSize).lean();
 
     const totalPredictions = await Prediction.countDocuments(filter);
 

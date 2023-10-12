@@ -15,6 +15,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: [8, "Password length should be at least 8 characters"],
+    index: true
   },
   email: {
     type: String,
@@ -30,6 +31,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     enum: ["user", "admin"],
     default: "user",
+    index: true
   },
 
   customer: {

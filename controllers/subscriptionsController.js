@@ -84,7 +84,7 @@ export const initializeTransaction = async (req, res) => {
       amount,
       plan,
       channels: ["card"], // limiting the checkout to show card, as it's the only channel that subscriptions are currently available through
-      callback_url: `https://success-vip.vercel.ap/vip`,
+      callback_url: `https://success-vip.vercel.app/vip`,
     });
 
     if (initializeTransactionResponse.status === false) {

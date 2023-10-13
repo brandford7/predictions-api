@@ -4,6 +4,7 @@ import User from "../models/User.js";
 import { NotFoundError } from "../errors/index.js";
 import { StatusCodes } from "http-status-codes";
 
+
 export const getAllPredictions = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const pageSize = parseInt(req.query.pageSize) || 10;
@@ -12,7 +13,7 @@ export const getAllPredictions = async (req, res) => {
   const filter = {};
 
   if (req.query.isVIP) {
-    filter.isVIP = req.query.isVIP === "true";
+    filter.isVIP = req.query.isVIP === "true"; // Convert the query param to a boolean
   }
 
   if (req.query.search) {
@@ -21,6 +22,7 @@ export const getAllPredictions = async (req, res) => {
       { game: searchQuery },
       { competition: searchQuery },
       { status: searchQuery },
+      { odd: searchQuery },
       // Add more fields to search as needed
     ];
   }
@@ -32,7 +34,8 @@ export const getAllPredictions = async (req, res) => {
     const predictions = await Prediction.find(filter)
       .sort({ [sortField]: sortDirection })
       .skip(skip)
-      .limit(pageSize).lean();
+      .limit(pageSize)
+      .lean();
 
     const totalPredictions = await Prediction.countDocuments(filter);
 
@@ -44,6 +47,7 @@ export const getAllPredictions = async (req, res) => {
     });
   } catch (error) {
     // Handle any errors (e.g., database errors)
+    console.error("Error:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ error: "Internal server error" });

@@ -29,7 +29,11 @@ app.use(helmet());
 
 
 
-app.use(cors());
+const corsOptions = {
+  origin: true,
+  credentials: true
+}
+app.options('*', cors(corsOptions)); 
 var html = xss('<script>alert("xss");</script>');
 console.log(html);
 

@@ -29,13 +29,8 @@ app.use(helmet());
 
 
 
-const corsOptions = {
-  origin: true,
-  credentials: true
-}
-app.options('*', cors(corsOptions)); 
-var html = xss('<script>alert("xss");</script>');
-console.log(html);
+app.use(cors());
+//var html = xss('<script>alert("xss");</script>');
 
 //routes
 app.get("/", (req, res) => {

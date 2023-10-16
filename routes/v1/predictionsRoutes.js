@@ -17,7 +17,7 @@ router
   .post(authenticateUser, checkRole("admin"), createPrediction);
 router
   .route("/:id")
-  .get(authenticateUser, getPredictionById)
+  .get( getPredictionById)
   .delete(authenticateUser, checkRole("admin"), deletePrediction)
   .patch(authenticateUser, checkRole("admin"), updatePrediction);
 

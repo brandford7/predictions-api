@@ -1,44 +1,49 @@
-
 import Prediction from "../models/Prediction.js";
 import User from "../models/User.js";
 import { NotFoundError } from "../errors/index.js";
 import { StatusCodes } from "http-status-codes";
 
-
 export const getAllPredictions = async (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const pageSize = parseInt(req.query.pageSize) || 10;
-  const skip = (page - 1) * pageSize;
-
-  const filter = {};
-
-  if (req.query.isVIP) {
-    filter.isVIP = req.query.isVIP === "true"; // Convert the query param to a boolean
-  }
-
-  if (req.query.search) {
-    const searchQuery = new RegExp(req.query.search, "i");
-    filter.$or = [
-      { game: searchQuery },
-      { competition: searchQuery },
-      { status: searchQuery },
-      { odd: searchQuery },
-      // Add more fields to search as needed
-    ];
-  }
-
-  const sortField = req.query.sort || "createdAt";
-  const sortDirection = req.query.order === "asc" ? 1 : -1;
-
   try {
+    // Parse query parameters and provide default values
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 10;
+    const skip = (page - 1) * pageSize;
+
+    const filter = {};
+
+    // Check if 'isVIP' is provided in the query and convert to boolean
+    if (req.query.isVIP) {
+      filter.isVIP = req.query.isVIP === "true";
+    }
+
+    // Check if 'search' query is provided and create a case-insensitive search regex
+    if (req.query.search) {
+      const searchQuery = new RegExp(req.query.search, "i");
+      filter.$or = [
+        { game: searchQuery },
+        { competition: searchQuery },
+        { status: searchQuery },
+        { odd: searchQuery },
+        // Add more fields to search as needed
+      ];
+    }
+
+    // Determine sort field and direction, with defaults
+    const sortField = req.query.sort || "createdAt";
+    const sortDirection = req.query.order === "asc" ? 1 : -1;
+
+    // Query the database with the filter and sort parameters
     const predictions = await Prediction.find(filter)
       .sort({ [sortField]: sortDirection })
       .skip(skip)
       .limit(pageSize)
       .lean();
 
+    // Count total predictions based on the filter
     const totalPredictions = await Prediction.countDocuments(filter);
 
+    // Send the response
     res.status(StatusCodes.OK).json({
       total: totalPredictions,
       page,
@@ -76,7 +81,7 @@ export const createPrediction = async (req, res) => {
 export const updatePrediction = async (req, res) => {
   const {
     params: { id: predictionId },
-    body: { game, competition, startPeriod, tip, isVIP, result, odd,status },
+    body: { game, competition, startPeriod, tip, isVIP, result, odd, status },
   } = req;
 
   const prediction = await Prediction.findByIdAndUpdate(
@@ -99,7 +104,7 @@ export const updatePrediction = async (req, res) => {
   prediction.isVIP = isVIP;
   prediction.result = result;
   prediction.odd = odd;
-  prediction.status =status
+  prediction.status = status;
 
   await prediction.save();
 

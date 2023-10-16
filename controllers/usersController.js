@@ -1,6 +1,7 @@
 import Paystack from "@paystack/paystack-sdk";
 import User from "../models/User.js";
 import config from "../config/config.js";
+import { NotFoundError } from "../errors/index.js";
 import { StatusCodes } from "http-status-codes";
 
 // Function to get all users (admin access)
@@ -11,19 +12,6 @@ export const getAllUsers = async (req, res) => {
     const users = await User.find({});
 
     res.json({ count: users.length, users });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-export const deleteUser = async (req, res) => {
-  try {
-    const user = await User.findByIdAndRemove(req.params.id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    res.json({ message: "User deleted successfully" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -47,11 +35,10 @@ export const getUserProfile = async (req, res) => {
     }
 
     // Get user's email and username from the database
-    let { email, username, customer,role } = user;
-    
+    let { email, username, password, customer } = user;
 
     // Send the user data and subscriptions as a response
-    res.status(StatusCodes.OK).json({ email, username, customer });
+    res.status(StatusCodes.OK).json({ email, username, password, customer });
   } catch (error) {
     console.error("Error fetching user profile:", error);
     res
@@ -60,7 +47,7 @@ export const getUserProfile = async (req, res) => {
   }
 };
 
-// Function to update the profile of the currently logged-in user
+// Function to allow the currently logged-in user to update the profile details
 export const updateUserProfile = async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -86,4 +73,31 @@ export const updateUserProfile = async (req, res) => {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
+};
+
+
+// Function to allow admin delete a user by ID
+export const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndRemove(req.params.id);
+    if (!user) {
+      throw new NotFoundError({ message: "User not found" });
+    }
+    res.json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+// Function to create a new user by admin
+
+export const createUser = async (req, res) => {
+  const newUser = await User.create(req.body);
+
+  res.status(StatusCodes.CREATED).json({
+    user: newUser,
+    message: "User created successfully",
+  });
 };

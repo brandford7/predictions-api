@@ -117,3 +117,43 @@ export const logoutUser = async (req, res) => {
   });
   res.status(StatusCodes.OK).json({ msg: "user logged out!" });
 };
+
+// Function to allow admin get a user's details by ID
+export const getUserById = async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (!user) {
+    throw new NotFoundError("user not found");
+  }
+  res.status(StatusCodes.OK).json({
+    user: user,
+  });
+};
+
+// Function to allow admin update a user's details by ID
+export const updateUserDetails = async (req, res) => {
+  const {
+    params: { id: userId },
+    body: { username, email, password, role },
+  } = req;
+
+  const user = await User.findByIdAndUpdate(
+    { _id: userId, createdBy: req.user.userId },
+    req.body,
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  if (!user) {
+    throw new NotFoundError({ message: "user not found" });
+  }
+
+  user.username = username;
+  user.email = email;
+  user.password = password;
+  user.role = role;
+  await user.save();
+
+  res.json({ message: "User details updated successfully" });
+};

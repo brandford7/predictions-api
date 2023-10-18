@@ -4,22 +4,45 @@ import config from "../config/config.js";
 import { NotFoundError } from "../errors/index.js";
 import { StatusCodes } from "http-status-codes";
 
-// Function to get all users (admin access)
+
 const paystack = new Paystack(config.paystackSecretKey);
 
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find({});
+    // Defined a filter object to store filter criteria
+    const filter = {};
 
-    res.json({ count: users.length, users });
+    // Check if a search query parameter exists and add it to the filter
+    if (req.query.search) {
+      filter.$or = [
+        { username: { $regex: req.query.search, $options: 'i' } },
+        { email: { $regex: req.query.search, $options: 'i' } },
+        // Add more fields to search as needed
+      ];
+    }
+
+    // Check if other filtering parameters exist and add them to the filter
+    if (req.query.date) {
+      filter.date = req.query.date;
+    }
+
+    if (req.query.username) {
+      filter.username = req.query.username;
+    }
+
+    // Use the filter object to query the database
+    const users = await User.find(filter);
+
+    res.status(Statuscodes.OK).json({ count: users.length, users });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Internal Server error" });
   }
 };
 
+
 // Function to get the profile of the currently logged-in user
-// controllers/userController.js
+
 export const getUserProfile = async (req, res) => {
   try {
     // Get the user's ID from the authenticated user

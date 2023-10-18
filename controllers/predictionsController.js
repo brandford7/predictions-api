@@ -76,12 +76,15 @@ export const createPrediction = async (req, res) => {
       prediction: newPrediction,
       message: "Prediction created successfully",
     });
-  }
-  catch (error) {
-    res.json({ message: 'failed to create prediction' })
-  };
-}
+  } catch (error) {
+    console.error("Error creating prediction:", error);
 
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: 'Failed to create prediction',
+      error: error.message, // Include the error message for debugging
+    });
+  }
+};
 // Function to update a prediction by ID
 export const updatePrediction = async (req, res) => {
   const {

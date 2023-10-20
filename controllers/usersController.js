@@ -86,7 +86,7 @@ export const getUserById = async (req, res) => {
 export const updateUserDetails = async (req, res) => {
   const {
     params: { id: userId },
-    body: { username, email, password, role },
+    body: { username, email, role },
   } = req;
 
   const user = await User.findByIdAndUpdate(
@@ -104,7 +104,7 @@ export const updateUserDetails = async (req, res) => {
 
   user.username = username;
   user.email = email;
-  user.password = password;
+  
   user.role = role;
   await user.save();
 

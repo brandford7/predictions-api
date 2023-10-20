@@ -33,7 +33,7 @@ export const getAllUsers = async (req, res) => {
     // Use the filter object to query the database
     const users = await User.find(filter);
 
-    res.status(Statuscodes.OK).json({ count: users.length, users });
+    res.status(StatusCodes.OK).json({ count: users.length, users });
   } catch (error) {
     console.error(error);
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Internal Server error" });

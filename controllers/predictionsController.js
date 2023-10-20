@@ -19,10 +19,11 @@ export const getAllPredictions = async (req, res) => {
     }
 
     // Check if 'search' query is provided and create a case-insensitive search regex
-    if (req.query.search) {
-      const searchQuery = new RegExp(req.query.search, 'i');
+
+
+ if (req.query.search) {
       filter.$or = [
-        { game: searchQuery },
+       { game: searchQuery },
         { competition: searchQuery },
         { status: searchQuery },
         { odd: searchQuery
@@ -34,17 +35,14 @@ export const getAllPredictions = async (req, res) => {
       ];
     }
 
-    // Check if 'startDate' and 'endDate' query parameters are provided
-    if (req.query.startDate && req.query.endDate) {
-      // Convert 'startDate' and 'endDate' strings to Date objects
-      const startDate = new Date(req.query.startDate);
-      const endDate = new Date(req.query.endDate);
 
-      // Add date range filter to the filter object
-      filter.createdAt = {
-        $gte: startDate, // Greater than or equal to the start date
-        $lte: endDate,   // Less than or equal to the end date
-      };
+
+     if (req.query.date) {
+      filter.date = req.query.date;
+    }
+
+    if (req.query.competition) {
+      filter.competition = req.query.competition;
     }
 
     // Determine sort field and direction, with defaults

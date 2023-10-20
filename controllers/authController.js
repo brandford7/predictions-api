@@ -116,44 +116,62 @@ export const logoutUser = async (req, res) => {
     expires: new Date(Date.now() + 1000),
   });
   res.status(StatusCodes.OK).json({ msg: "user logged out!" });
+
 };
 
-// Function to allow admin get a user's details by ID
-export const getUserById = async (req, res) => {
-  const user = await User.findById(req.params.id);
-  if (!user) {
-    throw new NotFoundError("user not found");
-  }
-  res.status(StatusCodes.OK).json({
-    user: user,
-  });
-};
+export const getUserProfile = async (req, res) => {
+  try {
+    // Get the user's ID from the authenticated user
+    const userId = req.user.userId;
 
-// Function to allow admin update a user's details by ID
-export const updateUserDetails = async (req, res) => {
-  const {
-    params: { id: userId },
-    body: { username, email, password, role },
-  } = req;
+    // Fetch user data from the database
+    const user = await User.findById(userId); // Replace 'User' with your actual User model
 
-  const user = await User.findByIdAndUpdate(
-    { _id: userId, createdBy: req.user.userId },
-    req.body,
-    {
-      new: true,
-      runValidators: true,
+    if (!user) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "User not found" });
     }
-  );
 
-  if (!user) {
-    throw new NotFoundError({ message: "user not found" });
+    // Get user's email and username from the database
+    let { email, username, password, customer } = user;
+
+    // Send the user data and subscriptions as a response
+    res.status(StatusCodes.OK).json({ email, username, password, customer });
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Internal server error" });
   }
-
-  user.username = username;
-  user.email = email;
-  user.password = password;
-  user.role = role;
-  await user.save();
-
-  res.json({ message: "User details updated successfully" });
 };
+
+// Function to allow the currently logged-in user to update the profile details
+export const updateUserProfile = async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+
+    // Retrieve the user by ID using req.user
+    const userId = req.user.userId;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update user properties
+    if (username) user.username = username;
+    if (email) user.email = email;
+    if (password) user.password = password;
+
+    await user.save();
+
+    res.json({ message: "Profile updated successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+

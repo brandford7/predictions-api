@@ -3,8 +3,9 @@ import {
   loginUser,
   logoutUser,
   registerUser,
-  updateUserDetails,
-  getUserById,
+  
+  getUserProfile,
+  updateUserProfile,
 } from "../../controllers/authController.js";
 import { authenticateUser, checkRole } from "../../middlewares/auth.js";
 
@@ -17,8 +18,10 @@ router.route("/login").post(loginUser);
 router.route("/logout").post(logoutUser);
 
 router
-  .route("/admin/:id")
-  .get(authenticateUser, checkRole("admin"), getUserById)
-  .patch(authenticateUser, checkRole("admin"), updateUserDetails);
+  .route("/profile")
+  .get(authenticateUser, getUserProfile)
+  .patch(authenticateUser, updateUserProfile);
+
+
 
 export default router;

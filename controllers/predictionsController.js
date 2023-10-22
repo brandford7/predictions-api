@@ -6,60 +6,51 @@ import { StatusCodes } from "http-status-codes";
 //get all predictions
 export const getAllPredictions = async (req, res) => {
   try {
-    // Parse query parameters and provide default values
     const page = parseInt(req.query.page) || 1;
     const pageSize = parseInt(req.query.pageSize) || 10;
     const skip = (page - 1) * pageSize;
 
     const filter = {};
 
-    // Check if 'isVIP' is provided in the query and convert to boolean
     if (req.query.isVIP) {
       filter.isVIP = req.query.isVIP === 'true';
     }
 
-    // Check if 'search' query is provided and create a case-insensitive search regex
-
-
- if (req.query.search) {
+    if (req.query.search) {
+      const searchQuery = new RegExp(req.query.search, 'i');
       filter.$or = [
-       { game: searchQuery },
+        { game: searchQuery },
         { competition: searchQuery },
         { status: searchQuery },
-        { odd: searchQuery
-         },
-          { status: searchQuery },
-        { tip: searchQuery
-         },
-        // Add more fields to search as needed
+        { odd: searchQuery },
+        { tip: searchQuery },
       ];
     }
 
-
-
-     if (req.query.date) {
-      filter.date = req.query.date;
+    if (req.query.date) {
+      const selectedDate = new Date(req.query.date);
+      const nextDate = new Date(new Date(selectedDate).setDate(selectedDate.getDate() + 1));
+      filter.startPeriod = {
+        $gte: selectedDate,
+        $lt: nextDate,
+      };
     }
 
     if (req.query.competition) {
       filter.competition = req.query.competition;
     }
 
-    // Determine sort field and direction, with defaults
     const sortField = req.query.sort || 'createdAt';
     const sortDirection = req.query.order === 'asc' ? 1 : -1;
 
-    // Query the database with the filter and sort parameters
     const predictions = await Prediction.find(filter)
       .sort({ [sortField]: sortDirection })
       .skip(skip)
       .limit(pageSize)
       .lean();
 
-    // Count total predictions based on the filter
     const totalPredictions = await Prediction.countDocuments(filter);
 
-    // Send the response
     res.status(StatusCodes.OK).json({
       total: totalPredictions,
       page,
@@ -67,14 +58,12 @@ export const getAllPredictions = async (req, res) => {
       predictions,
     });
   } catch (error) {
-    // Handle any errors (e.g., database errors)
     console.error('Error:', error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ error: 'Internal server error' });
   }
 };
-
 
 // Function to get a specific prediction by ID
 export const getPredictionById = async (req, res) => {

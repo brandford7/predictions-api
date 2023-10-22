@@ -8,6 +8,8 @@ import User from "../models/User.js";
 // Adjust the path to your User model
 import Paystack from "@paystack/paystack-sdk";
 import config from "../config/config.js";
+import { generateResetToken } from "../utils/generateResetToken.js";
+import { sendPasswordResetEmail } from "../services/emailService.js";
 
 const paystack = new Paystack(config.paystackSecretKey);
 
@@ -149,7 +151,7 @@ export const getUserProfile = async (req, res) => {
 // Function to allow the currently logged-in user to update the profile details
 export const updateUserProfile = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email } = req.body;
 
     // Retrieve the user by ID using req.user
     const userId = req.user.userId;
@@ -160,12 +162,17 @@ export const updateUserProfile = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Update user properties
-    if (username) user.username = username;
-    if (email) user.email = email;
-    if (password) user.password = password;
+    // Create an object to store the fields to be updated
+    const updatedFields = {};
 
-    await user.save();
+    // Update user properties
+    if (username) updatedFields.username = username;
+    if (email) updatedFields.email = email;
+
+    await User.findByIdAndUpdate(userId, updatedFields, {
+      new: true,
+      runValidators: true,
+    });
 
     res.json({ message: "Profile updated successfully" });
   } catch (error) {
@@ -173,5 +180,40 @@ export const updateUserProfile = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+export const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    // Convert the email to lowercase
+    const lowercaseEmail = email.toLowerCase();
+
+    // Find the user by email (converted to lowercase)
+    const user = await User.findOne({ email: lowercaseEmail });
+
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    // Generate a reset token
+    const resetToken = generateResetToken();
+
+    // Store the reset token and its expiration date in the user document
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 3600000; // Token expires in 1 hour
+
+    await user.save();
+
+    // Send a password reset email
+    sendPasswordResetEmail(user.email, resetToken);
+
+    res.status(StatusCodes.OK).json({ message: 'Password reset link sent to your email' });
+  } catch (error) {
+    console.error('Error during forgotPassword:', error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Password reset failed' });
+  }
+};
+
 
 

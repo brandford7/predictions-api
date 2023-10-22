@@ -84,32 +84,27 @@ export const getUserById = async (req, res) => {
 // Function to allow admin update a user's details by ID
 
 export const updateUserDetails = async (req, res) => {
-  const {
-    params: { id: userId },
-    body: { username, email, role },
-  } = req;
+  try {
+    const {
+      params: { id: userId },
+      body: { username, email, role },
+    } = req;
 
-  const user = await User.findByIdAndUpdate(
-    { _id: userId, createdBy: req.user.userId },
-    req.body,
-    {
-      new: true,
-      runValidators: true,
+    // Update user directly in the database
+    const updatedUser = await User.findByIdAndUpdate(
+      { _id: userId, createdBy: req.user.userId },
+      { username, email, role },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+      throw new NotFoundError("User not found" );
     }
-  );
 
-  if (!user) {
-    throw new NotFoundError({ message: "user not found" });
+    return res.status(200).json({ message: "User details updated successfully" });
+  } catch (error) {
+    // Handle database or other errors and return an appropriate response
+    console.error("Error updating user details:", error);
+    return res.status(500).json({ message: "Failed to update user details" });
   }
-
-  user.username = username;
-  user.email = email;
-  
-  user.role = role;
-  await user.save();
-
-  res.json({ message: "User details updated successfully" });
 };
-
-
-

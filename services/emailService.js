@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import dotenv from 'dotenv'
 
 dotenv.config();
 // Configure Nodemailer for sending email

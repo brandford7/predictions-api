@@ -4,7 +4,7 @@ import dotenv from 'dotenv'
 dotenv.config();
 // Configure Nodemailer for sending email
 const transporter = nodemailer.createTransport({
-  service: "Gmail", // Use your email service provider
+  service: process.env.MAIL_PROVIDER, // Use your email service provider
   auth: {
     user: process.env.MAIL_ADDRESS || "your-email-adress", // Your email address
     pass: process.env.MAIL_PASS || "your-email-password", // Your email password or an app-specific password

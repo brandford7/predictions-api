@@ -10,12 +10,16 @@ import notFoundMiddleware from "./middlewares/not-found.js";
 import errorHandlerMiddleware from "./middlewares/error-handler.js";
 import "express-async-errors";
 import cors from "cors";
+import compression from 'compression'
 
 import dotenv from "dotenv";
 import { startServer } from "./server.js";
 
-export const app = express();
 dotenv.config();
+
+export const app = express();
+
+app.use(compression());
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes

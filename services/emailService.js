@@ -6,7 +6,7 @@ dotenv.config();
 const transporter = nodemailer.createTransport({
   service: process.env.MAIL_PROVIDER, // Use your email service provider
   auth: {
-    user: process.env.MAIL_ADDRESS || "your-email-adress", // Your email address
+    user: process.env.MAIL_AD || "your-email-adress", // Your email address
     pass: process.env.MAIL_PASS || "your-email-password", // Your email password or an app-specific password
   },
 });

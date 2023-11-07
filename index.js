@@ -34,7 +34,7 @@ app.use(helmet());
 
 
 app.use(cors({
-  origin: ["https://success-vip.vercel.app","https://successsecretsbet.com", "http://localhost:3000"], // Add the allowed origins here
+  origin: ["https://successsecretsbet.com", "http://localhost:3000"], // Add the allowed origins here
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Specify the allowed HTTP methods
   allowedHeaders: "Content-Type,Authorization", // Specify the allowed request headers
 }));

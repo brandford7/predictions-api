@@ -32,13 +32,14 @@ app.use(express.json());
 app.use(helmet());
 
 
-
+/*
 app.use(cors({
   origin: ["https://successsecretsbet.com", "http://localhost:3000"], // Add the allowed origins here
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Specify the allowed HTTP methods
   allowedHeaders: "Content-Type,Authorization", // Specify the allowed request headers
 }));
-
+*/
+app.use(cors())
 var html = xss('<script>alert("xss");</script>');
 
 //routes
